@@ -132,8 +132,15 @@ export function AuthDialog() {
               required
               value={email}
               autoComplete="email"
+              aria-describedby={isSignUp ? "auth-email-hint" : undefined}
               onChange={(event) => setEmail(event.target.value)}
             />
+            {isSignUp && (
+              <p id="auth-email-hint" className="text-xs text-muted-foreground">
+                실제 이메일 인증을 거치지 않기 때문에 가상의 이메일을
+                가입해주셔도 괜찮습니다.
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="auth-password">비밀번호</Label>
