@@ -137,7 +137,7 @@ export function AuthDialog() {
             />
             {isSignUp && (
               <p id="auth-email-hint" className="text-xs text-muted-foreground">
-                실제 이메일 인증을 거치지 않기 때문에 가상의 이메일을
+                실제 이메일 인증을 거치지 않기 때문에 가상의 이메일로
                 가입해주셔도 괜찮습니다.
               </p>
             )}
