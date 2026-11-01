@@ -14,6 +14,11 @@ import { toast } from "sonner"
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase"
 import type { Comment, NewPostInput, Post, User } from "@/lib/types"
 
+export type NicknameResult = "saved" | "taken" | "failed"
+
+// Postgres의 고유 제약 위반 코드
+const UNIQUE_VIOLATION = "23505"
+
 type AppStore = {
   posts: Post[]
   user: User | null
@@ -25,6 +30,7 @@ type AppStore = {
   setAuthOpen: (open: boolean) => void
   openComposer: () => void
   signOut: () => Promise<void>
+  updateNickname: (nickname: string) => Promise<NicknameResult>
   addPost: (input: NewPostInput) => Promise<boolean>
   editPost: (postId: string, input: NewPostInput) => Promise<boolean>
   deletePost: (postId: string) => Promise<boolean>
@@ -203,6 +209,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     signOut: async () => {
       await getSupabase().auth.signOut()
+    },
+    updateNickname: async (nickname) => {
+      if (!user) return "failed"
+      const { error } = await getSupabase()
+        .from("profiles")
+        .update({ nickname })
+        .eq("id", user.id)
+      if (error?.code === UNIQUE_VIOLATION) return "taken"
+      if (error) {
+        toast.error(SAVE_ERROR)
+        return "failed"
+      }
+      // 헤더와 마이페이지는 세션의 닉네임을 쓰므로 함께 맞춘다.
+      await getSupabase().auth.updateUser({ data: { nickname } })
+      await refresh()
+      return "saved"
     },
     addPost: (input) =>
       save(getSupabase().from("posts").insert(toPostColumns(input))),

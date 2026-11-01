@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { EyeOff, Pin } from "lucide-react"
 
+import { NicknameDialog } from "@/components/nickname-dialog"
 import {
   CategoryBadge,
   ReviewStatusBadge,
@@ -184,9 +185,12 @@ export function MyPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-1">
-        <h1 className="text-[32px] leading-tight">
-          {user.nickname}님의 오답노트
-        </h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h1 className="text-[32px] leading-tight">
+            {user.nickname}님의 오답노트
+          </h1>
+          <NicknameDialog nickname={user.nickname} />
+        </div>
         <p className="text-sm text-muted-foreground">
           기록한 실수와 나눈 피드백을 한곳에서 돌아보세요.
         </p>

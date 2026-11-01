@@ -75,6 +75,18 @@ export function AuthDialog() {
     }
 
     setPending(true)
+    if (isSignUp) {
+      const { data: available } = await getSupabase().rpc(
+        "is_nickname_available",
+        { candidate: nickname }
+      )
+      if (available === false) {
+        setPending(false)
+        setError("이미 사용 중인 닉네임이에요.")
+        return
+      }
+    }
+
     const auth = getSupabase().auth
     const { data, error: authError } = isSignUp
       ? await auth.signUp({

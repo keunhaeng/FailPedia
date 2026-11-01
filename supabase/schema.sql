@@ -162,8 +162,34 @@ revoke all on public.post_feed, public.comment_feed from anon, authenticated;
 grant select on public.post_feed, public.comment_feed to anon, authenticated;
 
 grant select on public.profiles to authenticated;
+grant update (nickname) on public.profiles to authenticated;
 create policy "본인 프로필 조회" on public.profiles
   for select to authenticated using (id = auth.uid());
+create policy "본인 닉네임 수정" on public.profiles
+  for update to authenticated
+  using (id = auth.uid()) with check (id = auth.uid());
+
+-- 대소문자만 다른 닉네임도 같은 것으로 본다.
+create unique index profiles_nickname_key
+  on public.profiles (lower(nickname));
+
+-- 가입 트리거의 오류는 Auth가 일반 오류로 바꾸므로, 가입 전에 미리 확인한다.
+create function public.is_nickname_available(candidate text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select not exists (
+    select 1 from public.profiles
+    where lower(nickname) = lower(trim(candidate))
+  );
+$$;
+
+revoke all on function public.is_nickname_available(text) from public;
+grant execute on function public.is_nickname_available(text)
+  to anon, authenticated;
 
 -- 작성자와 작성일은 위조할 수 없다.
 grant select on public.posts to authenticated;
